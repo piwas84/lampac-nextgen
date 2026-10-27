@@ -1,4 +1,4 @@
-/* Lampac NextGen — Cinema Dark v1: тема + верхня панель + годинник + користувач. */
+/* Lampac NextGen — Cinema Dark v2: головна (банер+ряди), тема + верхня панель + годинник + користувач. */
 (function () {
   'use strict';
   if (window.__nextgen) return;
@@ -28,70 +28,3 @@
     '.ng-logo span{display:block;font-size:.5em;color:var(--ng-accent);letter-spacing:.12em;margin-top:.2em}',
     '.ng-tabs{display:flex;gap:.3em;flex:1;justify-content:center}',
     '.ng-tab{padding:.55em 1.1em;border-radius:.5em;color:var(--ng-dim);font-size:.95em}',
-    '.ng-tab.active{background:var(--ng-accent);color:#fff}',
-    '.ng-right{display:flex;align-items:center;gap:1.2em}',
-    '.ng-clock{text-align:right;line-height:1.1}.ng-clock b{font-size:1.3em;font-weight:500}',
-    '.ng-clock small{display:block;color:var(--ng-dim);font-size:.6em}',
-    '.ng-user{padding:.4em .9em;border:1px solid var(--ng-line);border-radius:2em;font-size:.8em}'
-  ].join('');
-
-  var TABS = [
-    ['Головна', /головн|^main$|home/i],
-    ['Фільми', /фільм|фильм|movie/i],
-    ['Серіали', /серіал|сериал|series|tv ?show/i],
-    ['Мультфільми', /мульт|cartoon|anime|аніме/i],
-    ['Музика', /музик|music/i],
-    ['ТБ', /(^|\s)(тб|тв)(\s|$)|телеб|live|ефір|^tv$/i],
-    ['Пошук', null]
-  ];
-
-  function go(i) {
-    var re = TABS[i][1];
-    if (!re) { try { Lampa.Search.open(); return; } catch (e) { $('.open--search').trigger('hover:enter'); return; } }
-    var hit = null;
-    $('.menu .menu__item').each(function () {
-      if (!hit && re.test($(this).find('.menu__text').text().trim())) hit = $(this);
-    });
-    if (hit) hit.trigger('hover:enter');
-    else if (i === 0) Lampa.Activity.push({ url: '', title: 'Головна', component: 'main', source: 'tmdb', page: 1 });
-    else if (i === 1) Lampa.Activity.push({ url: 'movie', title: 'Фільми', component: 'category', source: 'tmdb', page: 1 });
-    else if (i === 2) Lampa.Activity.push({ url: 'tv', title: 'Серіали', component: 'category', source: 'tmdb', page: 1 });
-    else Lampa.Noty.show('Розділ «' + TABS[i][0] + '» не знайдено в меню');
-  }
-
-  function clock(el) {
-    var d = new Date();
-    el.find('b').text(d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }));
-    el.find('small').text(d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' }));
-  }
-
-  function bar() {
-    if ($('.ng-bar').length) return;
-    var el = $('<div class="ng-bar"><div class="ng-logo">Lampac<span>NEXTGEN</span></div>' +
-      '<div class="ng-tabs"></div><div class="ng-right"><div class="ng-clock"><b></b><small></small></div>' +
-      '<div class="ng-user">Admin</div></div></div>');
-    TABS.forEach(function (t, i) {
-      var tab = $('<div class="ng-tab selector">' + t[0] + '</div>');
-      if (i === 0) tab.addClass('active');
-      tab.on('hover:enter click', function () {
-        $('.ng-tab').removeClass('active'); tab.addClass('active'); go(i);
-      });
-      el.find('.ng-tabs').append(tab);
-    });
-    $('.head').append(el);
-    $('body').addClass('ng-on');
-    clock(el.find('.ng-clock'));
-    setInterval(function () { clock(el.find('.ng-clock')); }, 15000);
-  }
-
-  function start() {
-    try { if (Lampa.Storage.get('nextgen_cinema', 'true') === 'false') return; } catch (e) {}
-    if (!document.getElementById('ng-style')) {
-      var s = document.createElement('style'); s.id = 'ng-style'; s.textContent = CSS; document.head.appendChild(s);
-    }
-    try { bar(); } catch (e) { console.log('NextGen bar:', e); }
-  }
-
-  if (window.appready) start();
-  else Lampa.Listener.follow('app', function (e) { if (e.type === 'ready') start(); });
-})();
